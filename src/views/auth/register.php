@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 require_once BASE_PATH . '/src/models/User.php';
 
 $error = '';
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['user_id'] = $loginResult['user']['id'];
                     $_SESSION['user_name'] = $loginResult['user']['name'];
                     $_SESSION['user_role'] = $loginResult['user']['role'];
-                    header("Location: /pj2/public/");
+                    header("Location: " . BASE_URL . "/");
                     exit;
                 }
             } else {
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="/pj2/public/register">
+        <form method="POST" action="<?= BASE_URL ?>/register">
             <div class="mb-4">
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                 <input type="text" id="name" name="name" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm">
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </button>
             <div class="text-center text-sm">
                 <span class="text-gray-500">Already have an account?</span>
-                <a href="/pj2/public/login" class="text-lumina-navy hover:text-lumina-gold font-medium transition ml-1">Sign in here</a>
+                <a href="<?= BASE_URL ?>/login" class="text-lumina-navy hover:text-lumina-gold font-medium transition ml-1">Sign in here</a>
             </div>
         </form>
     </div>

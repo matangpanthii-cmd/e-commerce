@@ -1,235 +1,482 @@
-<?php ob_start(); ?>
+﻿<?php
+ob_start();
+require_once BASE_PATH . '/src/models/Product.php';
+require_once BASE_PATH . '/src/models/Order.php';
+
+// ---- Auth Guard ----
+if (!isset($_SESSION['user_id'])) {
+    <?php
+ob_start();
+require_once BASE_PATH . '/src/models/Product.php';
+require_once BASE_PATH . '/src/models/Order.php';
+
+// ---- Auth Guard ----
+if (!isset($_SESSION['user_id'])) {
+    $_SESSION['redirect_after_login'] = '<?= BASE_URL ?>/checkout';
+    header("Location: " . BASE_URL . "/login");
+    exit;
+}
+
+// ---- Cart Check ----
+if (empty($_SESSION['cart'])) {
+    header("Location: " . BASE_URL . "/cart");
+    exit;
+}
+
+$productModel = new Product();
+$orderModel   = new Order();
+
+// Build cart items with real prices
+$cart_items = [];
+$subtotal = 0;
+foreach ($_SESSION['cart'] as $cart_key => $item) {
+    $p = $productModel->getProductById($item['product_id']);
+    if (!$p) continue;
+    $price = (float)$p['price'];
+    $line  = $price * $item['quantity'];
+    $subtotal += $line;
+    $cart_items[] = [
+        'cart_key'   => $cart_key,
+        'product_id' => $item['product_id'],
+        'name'       => $p['name'],
+        'slug'       => $p['slug'],
+        'color'      => $item['color'],
+        'size'       => $item['size'],
+        'quantity'   => $item['quantity'],
+        'price'      => $price,
+        'line_total' => $line,
+        'image'      => $p['images'][0]['image_url'] ?? '',
+    ];
+}
+$tax   = $subtotal * 0.08;
+$total = $subtotal + $tax;
+
+$errors = [];
+$form   = [];
+
+// ---- Handle POST — Place Order ----
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $form['shipping_name']    = trim($_POST['shipping_name'] ?? '');
+    $form['shipping_address'] = trim($_POST['shipping_address'] ?? '');
+    $form['shipping_phone']   = trim($_POST['shipping_phone'] ?? '');
+
+    if (empty($form['shipping_name']))    $errors[] = 'Full name is required.';
+    if (empty($form['shipping_address'])) $errors[] = 'Address is required.';
+    if (empty($form['shipping_phone']))   $errors[] = 'Phone number is required.';
+
+    if (empty($errors)) {
+        // Create order
+        $order_id = $orderModel->createOrder(
+            $_SESSION['user_id'],
+            $total,
+            $form['shipping_name'],
+            $form['shipping_address'],
+            $form['shipping_phone']
+        );
+
+        if ($order_id) {
+            // Insert order items
+            $items_data = [];
+            foreach ($cart_items as $ci) {
+                $items_data[] = [
+                    'product_id' => $ci['product_id'],
+                    'variant_id' => null,
+                    'quantity'   => $ci['quantity'],
+                    'price'      => $ci['price'],
+                ];
+            }
+            $orderModel->createOrderItems($order_id, $items_data);
+
+            // Clear cart
+            unset($_SESSION['cart']);
+
+            // Redirect to success
+            header("Location: " . BASE_URL . "/checkout/success?order_id=" . $order_id);
+            exit;
+        } else {
+            $errors[] = 'Could not place order. Please try again.';
+        }
+    }
+}
+?>
 
 <div class="bg-lumina-surface border-b border-gray-200">
     <div class="container mx-auto px-6 lg:px-12 py-8">
-        <h1 class="text-3xl font-bold tracking-widest uppercase">Secure Checkout</h1>
+        <h1 class="text-3xl font-bold tracking-widest uppercase">Checkout</h1>
     </div>
 </div>
 
-<div class="container mx-auto px-6 lg:px-12 py-12" x-data="{
-    step: 1, // 1: Shipping, 2: Payment, 3: Review
-    subtotal: 1075.00,
-    tax: 86.00,
-    get total() { return this.subtotal + this.tax; }
-}">
-    
+<div class="container mx-auto px-6 lg:px-12 py-12">
+
+    <?php if (!empty($errors)): ?>
+        <div class="mb-8 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-md text-sm">
+            <ul class="list-disc pl-4 space-y-1">
+                <?php foreach ($errors as $e): ?>
+                    <li><?php echo htmlspecialchars($e); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <form method="POST" action="<?= BASE_URL ?>/checkout" id="checkout-form">
     <div class="flex flex-col lg:flex-row gap-12">
-        
-        <!-- Checkout Flow -->
-        <div class="w-full lg:w-2/3">
-            
-            <!-- Progress Tracker -->
-            <div class="flex items-center justify-between mb-12 relative">
-                <div class="absolute left-0 top-1/2 -translate-y-1/2 w-full h-0.5 bg-gray-200 z-0"></div>
-                <!-- Step 1 -->
-                <div class="relative z-10 flex flex-col items-center">
-                    <div :class="{'bg-lumina-navy text-white': step >= 1}" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm bg-gray-200 text-gray-500 transition">1</div>
-                    <span class="mt-2 text-xs font-semibold uppercase tracking-wider text-lumina-navy">Shipping</span>
+
+        <!-- Left: Shipping Form -->
+        <div class="w-full lg:w-3/5">
+            <h2 class="text-xl font-bold mb-6 uppercase tracking-wider">Shipping Information</h2>
+
+            <div class="bg-white border border-gray-100 rounded-sm p-8 space-y-6">
+                <div>
+                    <label for="shipping_name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="shipping_name" name="shipping_name" required
+                           value="<?php echo htmlspecialchars($form['shipping_name'] ?? $_SESSION['user_name'] ?? ''); ?>"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-lumina-navy transition">
                 </div>
-                <!-- Step 2 -->
-                <div class="relative z-10 flex flex-col items-center">
-                    <div :class="{'bg-lumina-navy text-white': step >= 2, 'bg-gray-200 text-gray-500': step < 2}" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition">2</div>
-                    <span :class="{'text-lumina-navy': step >= 2, 'text-gray-400': step < 2}" class="mt-2 text-xs font-semibold uppercase tracking-wider transition">Payment</span>
+                <div>
+                    <label for="shipping_phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="shipping_phone" name="shipping_phone" required
+                           value="<?php echo htmlspecialchars($form['shipping_phone'] ?? ''); ?>"
+                           placeholder="e.g. 081-234-5678"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-lumina-navy transition">
                 </div>
-                <!-- Step 3 -->
-                <div class="relative z-10 flex flex-col items-center">
-                    <div :class="{'bg-lumina-navy text-white': step >= 3, 'bg-gray-200 text-gray-500': step < 3}" class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition">3</div>
-                    <span :class="{'text-lumina-navy': step >= 3, 'text-gray-400': step < 3}" class="mt-2 text-xs font-semibold uppercase tracking-wider transition">Review</span>
+                <div>
+                    <label for="shipping_address" class="block text-sm font-medium text-gray-700 mb-1">Shipping Address</label>
+                    <textarea id="shipping_address" name="shipping_address" required rows="4"
+                              placeholder="Street address, City, Province, Postal Code"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-lumina-navy transition resize-none"><?php echo htmlspecialchars($form['shipping_address'] ?? ''); ?></textarea>
                 </div>
             </div>
 
-            <!-- Step 1: Shipping Information -->
-            <div x-show="step === 1" x-transition.opacity>
-                <h2 class="text-xl font-bold mb-6 border-b border-gray-200 pb-2">Shipping Information</h2>
-                <form class="space-y-6" @submit.prevent="step = 2">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-                            <input type="text" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-                            <input type="text" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm">
-                        </div>
-                    </div>
-                    
+            <!-- Mock Payment Section -->
+            <h2 class="text-xl font-bold mt-10 mb-6 uppercase tracking-wider">Payment</h2>
+            <div class="bg-white border border-gray-100 rounded-sm p-8">
+                <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md text-sm mb-6 flex items-start space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span><strong>Demo Mode:</strong> This is a simulated payment. Click "Place Order" to confirm without real charges.</span>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
-                        <input type="email" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Card Number (Demo)</label>
+                        <input type="text" value="4242 4242 4242 4242" disabled
+                               class="w-full px-4 py-3 border border-gray-200 rounded-sm text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
-                        <input type="text" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm mb-3" placeholder="Street Address">
-                        <input type="text" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm" placeholder="Apt, Suite, Unit (optional)">
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">City *</label>
-                            <input type="text" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Expiry (Demo)</label>
+                            <input type="text" value="12/28" disabled
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-sm text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">State/Province *</label>
-                            <input type="text" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Postal Code *</label>
-                            <input type="text" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CVV (Demo)</label>
+                            <input type="text" value="123" disabled
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-sm text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
                         </div>
                     </div>
-
-                    <div class="pt-6 text-right">
-                        <button type="submit" class="bg-lumina-navy text-white px-8 py-4 font-medium uppercase tracking-wider text-sm hover:bg-opacity-90 transition shadow-md">Continue to Payment</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Step 2: Payment Method -->
-            <div x-show="step === 2" style="display: none;" x-transition.opacity>
-                <h2 class="text-xl font-bold mb-6 border-b border-gray-200 pb-2">Payment Method</h2>
-                
-                <div class="space-y-4 mb-8">
-                    <!-- Credit Card Option -->
-                    <label class="flex items-center justify-between p-4 border border-lumina-navy bg-gray-50 rounded-sm cursor-pointer">
-                        <div class="flex items-center space-x-3">
-                            <input type="radio" name="payment" checked class="text-lumina-navy focus:ring-lumina-navy">
-                            <span class="font-medium">Credit Card</span>
-                        </div>
-                        <div class="flex space-x-2">
-                            <!-- Icons -->
-                            <div class="w-8 h-5 bg-gray-200 rounded text-[8px] flex items-center justify-center font-bold">VISA</div>
-                            <div class="w-8 h-5 bg-gray-200 rounded text-[8px] flex items-center justify-center font-bold">MC</div>
-                        </div>
-                    </label>
-
-                    <!-- Digital Wallet Option -->
-                    <label class="flex items-center justify-between p-4 border border-gray-200 hover:border-gray-300 rounded-sm cursor-pointer transition">
-                        <div class="flex items-center space-x-3">
-                            <input type="radio" name="payment" class="text-lumina-navy focus:ring-lumina-navy">
-                            <span class="font-medium">Apple Pay / Google Pay</span>
-                        </div>
-                    </label>
-
-                    <!-- Crypto/QR Option -->
-                    <label class="flex items-center justify-between p-4 border border-gray-200 hover:border-gray-300 rounded-sm cursor-pointer transition">
-                        <div class="flex items-center space-x-3">
-                            <input type="radio" name="payment" class="text-lumina-navy focus:ring-lumina-navy">
-                            <span class="font-medium">PromptPay QR / Crypto</span>
-                        </div>
-                    </label>
-                </div>
-
-                <!-- CC Form -->
-                <div class="bg-gray-50 p-6 rounded-sm mb-8 border border-gray-200">
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Card Number *</label>
-                        <input type="text" placeholder="0000 0000 0000 0000" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm font-mono">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Expiry Date *</label>
-                            <input type="text" placeholder="MM/YY" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm font-mono">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">CVC *</label>
-                            <input type="text" placeholder="123" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm font-mono">
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Name on Card *</label>
-                        <input type="text" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-lumina-navy rounded-sm">
-                    </div>
-                </div>
-
-                <div class="flex justify-between items-center pt-6">
-                    <button @click="step = 1" class="text-gray-500 hover:text-lumina-navy text-sm font-medium underline">Back to Shipping</button>
-                    <button @click="step = 3" class="bg-lumina-navy text-white px-8 py-4 font-medium uppercase tracking-wider text-sm hover:bg-opacity-90 transition shadow-md">Review Order</button>
                 </div>
             </div>
-
-            <!-- Step 3: Review -->
-            <div x-show="step === 3" style="display: none;" x-transition.opacity>
-                <h2 class="text-xl font-bold mb-6 border-b border-gray-200 pb-2">Review Your Order</h2>
-                
-                <div class="bg-gray-50 p-6 rounded-sm mb-6 border border-gray-200 text-sm">
-                    <h3 class="font-bold mb-2">Shipping To:</h3>
-                    <p class="text-gray-600">John Doe</p>
-                    <p class="text-gray-600">123 Example Street, Apt 4B</p>
-                    <p class="text-gray-600">New York, NY 10001</p>
-                    <p class="text-gray-600">johndoe@example.com</p>
-                </div>
-
-                <div class="bg-gray-50 p-6 rounded-sm mb-8 border border-gray-200 text-sm">
-                    <h3 class="font-bold mb-2">Payment:</h3>
-                    <p class="text-gray-600 flex items-center"><span class="w-8 h-5 bg-gray-300 rounded text-[8px] flex items-center justify-center font-bold text-white mr-2">VISA</span> Ending in 4242</p>
-                </div>
-
-                <div class="flex justify-between items-center pt-6 border-t border-gray-200">
-                    <button @click="step = 2" class="text-gray-500 hover:text-lumina-navy text-sm font-medium underline">Back to Payment</button>
-                    <button @click="alert('Order Placed Successfully! Redirecting to confirmation page.')" class="bg-lumina-gold text-white px-8 py-4 font-bold uppercase tracking-wider hover:bg-yellow-600 transition shadow-lg">Place Order</button>
-                </div>
-            </div>
-
         </div>
 
-        <!-- Persistent Order Summary Sidebar -->
-        <div class="w-full lg:w-1/3">
-            <div class="bg-gray-50 p-6 rounded-sm sticky top-24 border border-gray-100">
-                <h2 class="text-lg font-bold mb-4">Summary</h2>
-                
-                <!-- Items Mini-list -->
-                <div class="space-y-4 mb-6 pb-6 border-b border-gray-200">
-                    <div class="flex items-start">
-                        <div class="w-16 h-20 bg-gray-200 mr-4 flex-shrink-0">
-                            <img src="https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1936&auto=format&fit=crop" class="w-full h-full object-cover">
+        <!-- Right: Order Summary -->
+        <div class="w-full lg:w-2/5">
+            <h2 class="text-xl font-bold mb-6 uppercase tracking-wider">Order Summary</h2>
+            <div class="bg-gray-50 border border-gray-100 rounded-sm p-6 sticky top-24">
+                <div class="space-y-4 mb-6">
+                    <?php foreach ($cart_items as $ci): ?>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-20 bg-gray-200 flex-shrink-0 overflow-hidden rounded-sm">
+                            <?php if ($ci['image']): ?>
+                                <img src="<?php echo htmlspecialchars($ci['image']); ?>" class="w-full h-full object-cover" alt="">
+                            <?php endif; ?>
                         </div>
-                        <div class="flex-grow">
-                            <h4 class="text-xs font-semibold">Navy Cashmere Overcoat</h4>
-                            <p class="text-xs text-gray-500 mb-1">Navy, Size 50 / Qty: 1</p>
-                            <p class="text-sm font-medium">$895.00</p>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate"><?php echo htmlspecialchars($ci['name']); ?></p>
+                            <p class="text-xs text-gray-500">
+                                <?php
+                                $parts = [];
+                                if ($ci['color']) $parts[] = ucfirst($ci['color']);
+                                if ($ci['size'])  $parts[] = 'Size '.$ci['size'];
+                                echo implode(', ', $parts);
+                                ?>
+                            </p>
+                            <p class="text-xs text-gray-500">Qty: <?php echo $ci['quantity']; ?></p>
+                        </div>
+                        <div class="text-sm font-medium flex-shrink-0">
+                            $<?php echo number_format($ci['line_total'], 2); ?>
                         </div>
                     </div>
-                    <div class="flex items-start">
-                        <div class="w-16 h-20 bg-gray-200 mr-4 flex-shrink-0">
-                            <img src="https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1964&auto=format&fit=crop" class="w-full h-full object-cover">
-                        </div>
-                        <div class="flex-grow">
-                            <h4 class="text-xs font-semibold">Silk Blouse</h4>
-                            <p class="text-xs text-gray-500 mb-1">Ivory, Size S / Qty: 1</p>
-                            <p class="text-sm font-medium">$180.00</p>
-                        </div>
-                    </div>
+                    <?php endforeach; ?>
                 </div>
 
-                <div class="space-y-3 mb-6 text-sm">
+                <div class="border-t border-gray-200 pt-4 space-y-3 text-sm mb-6">
                     <div class="flex justify-between">
                         <span class="text-gray-600">Subtotal</span>
-                        <span class="font-medium" x-text="'$' + subtotal.toFixed(2)"></span>
+                        <span>$<?php echo number_format($subtotal, 2); ?></span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Shipping</span>
-                        <span class="font-medium">Free</span>
+                        <span class="text-green-600 font-medium">Free</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-600">Tax (8%)</span>
-                        <span class="font-medium" x-text="'$' + tax.toFixed(2)"></span>
+                        <span>$<?php echo number_format($tax, 2); ?></span>
                     </div>
                 </div>
-                
-                <div class="border-t border-gray-200 pt-4">
-                    <div class="flex justify-between items-center text-lg font-bold">
+                <div class="border-t border-gray-200 pt-4 mb-8">
+                    <div class="flex justify-between items-center text-xl font-bold">
                         <span>Total</span>
-                        <span x-text="'$' + total.toFixed(2)"></span>
+                        <span>$<?php echo number_format($total, 2); ?></span>
+                    </div>
+                </div>
+
+                <button type="submit" id="place-order-btn"
+                        class="w-full bg-lumina-navy text-white py-4 font-semibold uppercase tracking-wider text-sm hover:bg-opacity-90 transition shadow-md">
+                    Place Order — $<?php echo number_format($total, 2); ?>
+                </button>
+                <p class="text-xs text-gray-400 text-center mt-4">By placing your order, you agree to our Terms of Service.</p>
+            </div>
+        </div>
+
+    </div>
+    </form>
+</div>
+
+<?php
+$content = ob_get_clean();
+require BASE_PATH . '/src/views/layouts/main.php';
+?>
+SESSION['redirect_after_login'] = BASE_URL . '';
+    header("Location: " . BASE_URL . "/login");
+    exit;
+}
+
+// ---- Cart Check ----
+if (empty($_SESSION['cart'])) {
+    header("Location: " . BASE_URL . "/cart");
+    exit;
+}
+
+$productModel = new Product();
+$orderModel   = new Order();
+
+// Build cart items with real prices
+$cart_items = [];
+$subtotal = 0;
+foreach ($_SESSION['cart'] as $cart_key => $item) {
+    $p = $productModel->getProductById($item['product_id']);
+    if (!$p) continue;
+    $price = (float)$p['price'];
+    $line  = $price * $item['quantity'];
+    $subtotal += $line;
+    $cart_items[] = [
+        'cart_key'   => $cart_key,
+        'product_id' => $item['product_id'],
+        'name'       => $p['name'],
+        'slug'       => $p['slug'],
+        'color'      => $item['color'],
+        'size'       => $item['size'],
+        'quantity'   => $item['quantity'],
+        'price'      => $price,
+        'line_total' => $line,
+        'image'      => $p['images'][0]['image_url'] ?? '',
+    ];
+}
+$tax   = $subtotal * 0.08;
+$total = $subtotal + $tax;
+
+$errors = [];
+$form   = [];
+
+// ---- Handle POST — Place Order ----
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $form['shipping_name']    = trim($_POST['shipping_name'] ?? '');
+    $form['shipping_address'] = trim($_POST['shipping_address'] ?? '');
+    $form['shipping_phone']   = trim($_POST['shipping_phone'] ?? '');
+
+    if (empty($form['shipping_name']))    $errors[] = 'Full name is required.';
+    if (empty($form['shipping_address'])) $errors[] = 'Address is required.';
+    if (empty($form['shipping_phone']))   $errors[] = 'Phone number is required.';
+
+    if (empty($errors)) {
+        // Create order
+        $order_id = $orderModel->createOrder(
+            $_SESSION['user_id'],
+            $total,
+            $form['shipping_name'],
+            $form['shipping_address'],
+            $form['shipping_phone']
+        );
+
+        if ($order_id) {
+            // Insert order items
+            $items_data = [];
+            foreach ($cart_items as $ci) {
+                $items_data[] = [
+                    'product_id' => $ci['product_id'],
+                    'variant_id' => null,
+                    'quantity'   => $ci['quantity'],
+                    'price'      => $ci['price'],
+                ];
+            }
+            $orderModel->createOrderItems($order_id, $items_data);
+
+            // Clear cart
+            unset($_SESSION['cart']);
+
+            // Redirect to success
+            header("Location: " . BASE_URL . "/checkout/success?order_id=" . $order_id);
+            exit;
+        } else {
+            $errors[] = 'Could not place order. Please try again.';
+        }
+    }
+}
+?>
+
+<div class="bg-lumina-surface border-b border-gray-200">
+    <div class="container mx-auto px-6 lg:px-12 py-8">
+        <h1 class="text-3xl font-bold tracking-widest uppercase">Checkout</h1>
+    </div>
+</div>
+
+<div class="container mx-auto px-6 lg:px-12 py-12">
+
+    <?php if (!empty($errors)): ?>
+        <div class="mb-8 bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-md text-sm">
+            <ul class="list-disc pl-4 space-y-1">
+                <?php foreach ($errors as $e): ?>
+                    <li><?php echo htmlspecialchars($e); ?></li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
+
+    <form method="POST" action="<?= BASE_URL ?>/checkout" id="checkout-form">
+    <div class="flex flex-col lg:flex-row gap-12">
+
+        <!-- Left: Shipping Form -->
+        <div class="w-full lg:w-3/5">
+            <h2 class="text-xl font-bold mb-6 uppercase tracking-wider">Shipping Information</h2>
+
+            <div class="bg-white border border-gray-100 rounded-sm p-8 space-y-6">
+                <div>
+                    <label for="shipping_name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="shipping_name" name="shipping_name" required
+                           value="<?php echo htmlspecialchars($form['shipping_name'] ?? $_SESSION['user_name'] ?? ''); ?>"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-lumina-navy transition">
+                </div>
+                <div>
+                    <label for="shipping_phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                    <input type="tel" id="shipping_phone" name="shipping_phone" required
+                           value="<?php echo htmlspecialchars($form['shipping_phone'] ?? ''); ?>"
+                           placeholder="e.g. 081-234-5678"
+                           class="w-full px-4 py-3 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-lumina-navy transition">
+                </div>
+                <div>
+                    <label for="shipping_address" class="block text-sm font-medium text-gray-700 mb-1">Shipping Address</label>
+                    <textarea id="shipping_address" name="shipping_address" required rows="4"
+                              placeholder="Street address, City, Province, Postal Code"
+                              class="w-full px-4 py-3 border border-gray-300 rounded-sm text-sm focus:outline-none focus:ring-2 focus:ring-lumina-navy transition resize-none"><?php echo htmlspecialchars($form['shipping_address'] ?? ''); ?></textarea>
+                </div>
+            </div>
+
+            <!-- Mock Payment Section -->
+            <h2 class="text-xl font-bold mt-10 mb-6 uppercase tracking-wider">Payment</h2>
+            <div class="bg-white border border-gray-100 rounded-sm p-8">
+                <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md text-sm mb-6 flex items-start space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span><strong>Demo Mode:</strong> This is a simulated payment. Click "Place Order" to confirm without real charges.</span>
+                </div>
+                <div class="grid grid-cols-1 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Card Number (Demo)</label>
+                        <input type="text" value="4242 4242 4242 4242" disabled
+                               class="w-full px-4 py-3 border border-gray-200 rounded-sm text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Expiry (Demo)</label>
+                            <input type="text" value="12/28" disabled
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-sm text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">CVV (Demo)</label>
+                            <input type="text" value="123" disabled
+                                   class="w-full px-4 py-3 border border-gray-200 rounded-sm text-sm bg-gray-50 text-gray-400 cursor-not-allowed">
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Right: Order Summary -->
+        <div class="w-full lg:w-2/5">
+            <h2 class="text-xl font-bold mb-6 uppercase tracking-wider">Order Summary</h2>
+            <div class="bg-gray-50 border border-gray-100 rounded-sm p-6 sticky top-24">
+                <div class="space-y-4 mb-6">
+                    <?php foreach ($cart_items as $ci): ?>
+                    <div class="flex items-center space-x-4">
+                        <div class="w-16 h-20 bg-gray-200 flex-shrink-0 overflow-hidden rounded-sm">
+                            <?php if ($ci['image']): ?>
+                                <img src="<?php echo htmlspecialchars($ci['image']); ?>" class="w-full h-full object-cover" alt="">
+                            <?php endif; ?>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate"><?php echo htmlspecialchars($ci['name']); ?></p>
+                            <p class="text-xs text-gray-500">
+                                <?php
+                                $parts = [];
+                                if ($ci['color']) $parts[] = ucfirst($ci['color']);
+                                if ($ci['size'])  $parts[] = 'Size '.$ci['size'];
+                                echo implode(', ', $parts);
+                                ?>
+                            </p>
+                            <p class="text-xs text-gray-500">Qty: <?php echo $ci['quantity']; ?></p>
+                        </div>
+                        <div class="text-sm font-medium flex-shrink-0">
+                            $<?php echo number_format($ci['line_total'], 2); ?>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="border-t border-gray-200 pt-4 space-y-3 text-sm mb-6">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Subtotal</span>
+                        <span>$<?php echo number_format($subtotal, 2); ?></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Shipping</span>
+                        <span class="text-green-600 font-medium">Free</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Tax (8%)</span>
+                        <span>$<?php echo number_format($tax, 2); ?></span>
+                    </div>
+                </div>
+                <div class="border-t border-gray-200 pt-4 mb-8">
+                    <div class="flex justify-between items-center text-xl font-bold">
+                        <span>Total</span>
+                        <span>$<?php echo number_format($total, 2); ?></span>
+                    </div>
+                </div>
+
+                <button type="submit" id="place-order-btn"
+                        class="w-full bg-lumina-navy text-white py-4 font-semibold uppercase tracking-wider text-sm hover:bg-opacity-90 transition shadow-md">
+                    Place Order — $<?php echo number_format($total, 2); ?>
+                </button>
+                <p class="text-xs text-gray-400 text-center mt-4">By placing your order, you agree to our Terms of Service.</p>
+            </div>
+        </div>
+
     </div>
+    </form>
 </div>
 
-<?php 
-$content = ob_get_clean(); 
-require BASE_PATH . '/src/views/layouts/main.php'; 
+<?php
+$content = ob_get_clean();
+require BASE_PATH . '/src/views/layouts/main.php';
 ?>

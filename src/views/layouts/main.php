@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -63,14 +63,14 @@
     <header class="bg-white border-b border-gray-100 sticky top-0 z-50">
         <div class="container mx-auto px-6 lg:px-12 py-4 flex justify-between items-center">
             <!-- Logo -->
-            <a href="/pj2/public/" class="text-2xl font-bold tracking-widest uppercase">Lumina</a>
+            <a href="<?= BASE_URL ?>/" class="text-2xl font-bold tracking-widest uppercase">Lumina</a>
 
             <!-- Desktop Navigation -->
             <nav class="hidden md:flex space-x-8">
-                <a href="/pj2/public/products?category=new" class="nav-link text-sm font-medium">New Arrivals</a>
-                <a href="/pj2/public/products?category=men" class="nav-link text-sm font-medium">Men</a>
-                <a href="/pj2/public/products?category=women" class="nav-link text-sm font-medium">Women</a>
-                <a href="/pj2/public/products?category=accessories" class="nav-link text-sm font-medium">Accessories</a>
+                <a href="<?= BASE_URL ?>/products?category=new" class="nav-link text-sm font-medium">New Arrivals</a>
+                <a href="<?= BASE_URL ?>/products?category=men" class="nav-link text-sm font-medium">Men</a>
+                <a href="<?= BASE_URL ?>/products?category=women" class="nav-link text-sm font-medium">Women</a>
+                <a href="<?= BASE_URL ?>/products?category=accessories" class="nav-link text-sm font-medium">Accessories</a>
             </nav>
 
             <!-- Actions -->
@@ -79,14 +79,14 @@
                 <?php if(isset($_SESSION['user_id'])): ?>
                     <div class="hidden md:flex items-center space-x-4">
                         <span class="text-sm font-medium">Hi, <?php echo htmlspecialchars(explode(' ', trim($_SESSION['user_name']))[0]); ?></span>
-                        <a href="/pj2/public/logout" class="text-gray-600 hover:text-lumina-gold transition">
+                        <a href="<?= BASE_URL ?>/logout" class="text-gray-600 hover:text-lumina-gold transition">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                             </svg>
                         </a>
                     </div>
                 <?php else: ?>
-                    <a href="/pj2/public/login" class="text-gray-800 hover:text-lumina-gold transition hidden md:block">
+                    <a href="<?= BASE_URL ?>/login" class="text-gray-800 hover:text-lumina-gold transition hidden md:block">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -100,7 +100,7 @@
                     </svg>
                 </button>
                 <!-- Cart Icon -->
-                <a href="/pj2/public/cart" class="hover:text-lumina-gold transition relative">
+                <a href="<?= BASE_URL ?>/cart" class="hover:text-lumina-gold transition relative">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>

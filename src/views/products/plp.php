@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 ob_start(); 
 require_once BASE_PATH . '/src/models/Product.php';
 
@@ -110,11 +110,11 @@ $products = $productModel->getAllProducts($category, $sort);
                         
                         <img src="<?php echo htmlspecialchars($product['primary_image'] ?? 'https://via.placeholder.com/400x500?text=No+Image'); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="w-full h-80 object-cover object-center group-hover:scale-105 transition duration-500">
                         <div class="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/60 to-transparent flex justify-center">
-                            <a href="/pj2/public/product/<?php echo $product['slug']; ?>" class="w-full bg-white text-lumina-navy py-2 font-medium text-sm hover:bg-lumina-gold hover:text-white transition shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300 text-center block">View Details</a>
+                            <a href="<?= BASE_URL ?>/product/<?php echo $product['slug']; ?>" class="w-full bg-white text-lumina-navy py-2 font-medium text-sm hover:bg-lumina-gold hover:text-white transition shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300 text-center block">View Details</a>
                         </div>
                     </div>
                     <div>
-                        <h3 class="text-sm font-semibold mb-1 group-hover:text-lumina-gold transition"><a href="/pj2/public/product/<?php echo $product['slug']; ?>"><?php echo htmlspecialchars($product['name']); ?></a></h3>
+                        <h3 class="text-sm font-semibold mb-1 group-hover:text-lumina-gold transition"><a href="<?= BASE_URL ?>/product/<?php echo $product['slug']; ?>"><?php echo htmlspecialchars($product['name']); ?></a></h3>
                         <p class="text-gray-500 text-sm mb-2"><?php echo htmlspecialchars($product['category_name'] ?? 'Uncategorized'); ?></p>
                         <div class="flex items-center space-x-2">
                             <?php if(isset($product['status']) && $product['status'] === 'sale'): ?>

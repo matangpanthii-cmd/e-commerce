@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 ob_start(); 
 require_once BASE_PATH . '/src/models/Product.php';
 $productModel = new Product();
@@ -18,8 +18,8 @@ $trendingProducts = $productModel->getTrendingProducts(4);
         <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6">Effortless Sophistication</h1>
         <p class="text-lg md:text-xl font-light mb-10 max-w-2xl mx-auto">Discover the new season collection. Tailored for the modern individual who values craftsmanship and timeless style.</p>
         <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="/pj2/public/products?category=men" class="px-8 py-3 bg-white text-lumina-navy font-medium hover:bg-gray-100 transition rounded-sm">Shop Men</a>
-            <a href="/pj2/public/products?category=women" class="px-8 py-3 bg-transparent border border-white text-white font-medium hover:bg-white hover:text-lumina-navy transition rounded-sm">Shop Women</a>
+            <a href="<?= BASE_URL ?>/products?category=men" class="px-8 py-3 bg-white text-lumina-navy font-medium hover:bg-gray-100 transition rounded-sm">Shop Men</a>
+            <a href="<?= BASE_URL ?>/products?category=women" class="px-8 py-3 bg-transparent border border-white text-white font-medium hover:bg-white hover:text-lumina-navy transition rounded-sm">Shop Women</a>
         </div>
     </div>
 </section>
@@ -34,7 +34,7 @@ $trendingProducts = $productModel->getTrendingProducts(4);
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
             <!-- Collection 1 -->
-            <a href="/pj2/public/products?category=tailoring" class="group relative block h-96 overflow-hidden">
+            <a href="<?= BASE_URL ?>/products?category=tailoring" class="group relative block h-96 overflow-hidden">
                 <img src="https://images.unsplash.com/photo-1594938298603-c8148c4dae35?q=80&w=1780&auto=format&fit=crop" alt="Men's Tailoring" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                 <div class="absolute bottom-0 left-0 p-8 w-full">
@@ -45,7 +45,7 @@ $trendingProducts = $productModel->getTrendingProducts(4);
             </a>
             
             <!-- Collection 2 -->
-            <a href="/pj2/public/products?category=women" class="group relative block h-96 overflow-hidden">
+            <a href="<?= BASE_URL ?>/products?category=women" class="group relative block h-96 overflow-hidden">
                 <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?q=80&w=1920&auto=format&fit=crop" alt="Women's Collection" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                 <div class="absolute bottom-0 left-0 p-8 w-full">
@@ -56,7 +56,7 @@ $trendingProducts = $productModel->getTrendingProducts(4);
             </a>
             
             <!-- Collection 3 -->
-            <a href="/pj2/public/products?category=accessories" class="group relative block h-96 overflow-hidden">
+            <a href="<?= BASE_URL ?>/products?category=accessories" class="group relative block h-96 overflow-hidden">
                 <img src="https://images.unsplash.com/photo-1543163521-1bf539c55dd2?q=80&w=1760&auto=format&fit=crop" alt="Fine Accessories" class="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
                 <div class="absolute bottom-0 left-0 p-8 w-full">
@@ -77,7 +77,7 @@ $trendingProducts = $productModel->getTrendingProducts(4);
                 <h2 class="text-3xl font-bold tracking-wide mb-2">Trending Now</h2>
                 <div class="w-16 h-1 bg-lumina-gold"></div>
             </div>
-            <a href="/pj2/public/products" class="hidden md:inline-block text-sm uppercase tracking-widest font-semibold pb-1 border-b border-lumina-navy hover:text-lumina-gold hover:border-lumina-gold transition">View All</a>
+            <a href="<?= BASE_URL ?>/products" class="hidden md:inline-block text-sm uppercase tracking-widest font-semibold pb-1 border-b border-lumina-navy hover:text-lumina-gold hover:border-lumina-gold transition">View All</a>
         </div>
         
         <!-- Products Grid -->
@@ -96,11 +96,11 @@ $trendingProducts = $productModel->getTrendingProducts(4);
                     
                     <!-- Quick Add Overlay -->
                     <div class="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/60 to-transparent flex justify-center">
-                        <a href="/pj2/public/product/<?php echo $product['slug']; ?>" class="w-full bg-white text-lumina-navy py-2 font-medium text-sm hover:bg-lumina-gold hover:text-white transition shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300 text-center block">View Details</a>
+                        <a href="<?= BASE_URL ?>/product/<?php echo $product['slug']; ?>" class="w-full bg-white text-lumina-navy py-2 font-medium text-sm hover:bg-lumina-gold hover:text-white transition shadow-lg transform translate-y-4 group-hover:translate-y-0 duration-300 text-center block">View Details</a>
                     </div>
                 </div>
                 <div>
-                    <h3 class="text-sm font-semibold mb-1 group-hover:text-lumina-gold transition"><a href="/pj2/public/product/<?php echo $product['slug']; ?>"><?php echo htmlspecialchars($product['name']); ?></a></h3>
+                    <h3 class="text-sm font-semibold mb-1 group-hover:text-lumina-gold transition"><a href="<?= BASE_URL ?>/product/<?php echo $product['slug']; ?>"><?php echo htmlspecialchars($product['name']); ?></a></h3>
                     <p class="text-gray-500 text-sm mb-2"><?php echo htmlspecialchars($product['category_name']); ?></p>
                     <div class="flex items-center space-x-2">
                         <?php if($product['status'] === 'sale'): ?>

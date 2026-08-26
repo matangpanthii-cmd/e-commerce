@@ -1,4 +1,4 @@
-<?php 
+﻿<?php 
 ob_start(); 
 require_once BASE_PATH . '/src/models/Product.php';
 $productModel = new Product();
@@ -29,9 +29,9 @@ $default_size = !empty($sizes) ? $sizes[0] : '';
 <div class="bg-lumina-surface border-b border-gray-200">
     <div class="container mx-auto px-6 lg:px-12 py-4">
         <nav class="text-sm text-gray-500 font-medium">
-            <a href="/pj2/public/" class="hover:text-lumina-gold transition">Home</a>
+            <a href="<?= BASE_URL ?>/" class="hover:text-lumina-gold transition">Home</a>
             <span class="mx-2">/</span>
-            <a href="/pj2/public/products" class="hover:text-lumina-gold transition">Men's Tailoring</a>
+            <a href="<?= BASE_URL ?>/products" class="hover:text-lumina-gold transition">Men's Tailoring</a>
             <span class="mx-2">/</span>
             <span class="text-lumina-navy"><?php echo htmlspecialchars($product['name']); ?></span>
         </nav>
@@ -78,7 +78,7 @@ $default_size = !empty($sizes) ? $sizes[0] : '';
                 <?php echo htmlspecialchars($product['description']); ?>
             </p>
 
-            <form action="/pj2/public/cart/add" method="POST">
+            <form action="<?= BASE_URL ?>/cart/add" method="POST">
                 <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
                 <!-- Color Variants -->
                 <?php if(!empty($colors)): ?>

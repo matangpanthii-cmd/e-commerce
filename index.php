@@ -1,5 +1,5 @@
 <?php
-// Redirect root to public folder
-header('Location: /pj2/public/');
+// Root redirect → luminashop.freedev.app/public/
+header('Location: /public/');
 exit;
 ?>

@@ -60,5 +60,44 @@ class User {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
+
+    // ---- Admin Methods ----
+
+    public function getAllUsers($search = '') {
+        $query = "SELECT id, name, email, role, created_at FROM " . $this->table_name;
+        if ($search) {
+            $query .= " WHERE name LIKE :search OR email LIKE :search";
+        }
+        $query .= " ORDER BY created_at DESC";
+        $stmt = $this->conn->prepare($query);
+        if ($search) {
+            $like = '%' . $search . '%';
+            $stmt->bindParam(':search', $like);
+        }
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function updateRole($id, $role) {
+        $allowed = ['admin', 'customer'];
+        if (!in_array($role, $allowed)) return false;
+        $query = "UPDATE " . $this->table_name . " SET role = :role WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':role', $role);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    public function deleteUser($id) {
+        $query = "DELETE FROM " . $this->table_name . " WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+        return $stmt->execute();
+    }
+
+    public function countAll() {
+        $stmt = $this->conn->query("SELECT COUNT(*) FROM " . $this->table_name);
+        return $stmt->fetchColumn();
+    }
 }
 ?>

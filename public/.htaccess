@@ -1,8 +1,13 @@
 Options -MultiViews
 RewriteEngine On
-RewriteBase /pj2/public/
 
-# Redirect to public index
+# luminashop.freedev.app — root domain
+# โครงสร้าง: htdocs/public/ คือ router
+RewriteBase /public/
+
+# Serve real files and directories directly
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
+
+# Route everything else through index.php
 RewriteRule ^(.*)$ index.php [QSA,L]
