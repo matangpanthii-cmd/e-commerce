@@ -1,13 +1,12 @@
-Options -MultiViews
-RewriteEngine On
+<IfModule mod_rewrite.c>
+    Options -MultiViews
+    RewriteEngine On
 
-# luminashop.freedev.app — root domain
-# โครงสร้าง: htdocs/public/ คือ router
-RewriteBase /public/
+    # We are now routing from the root htaccess, so no RewriteBase is needed here
+    # or RewriteBase / can be used depending on server config, but let's just 
+    # route relative to this directory.
 
-# Serve real files and directories directly
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-
-# Route everything else through index.php
-RewriteRule ^(.*)$ index.php [QSA,L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

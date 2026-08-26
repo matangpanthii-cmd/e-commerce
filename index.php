@@ -1,5 +1,3 @@
 <?php
-// Root redirect → luminashop.freedev.app/public/
-header('Location: /public/');
-exit;
-?>
+// Load the application from the public directory
+require_once __DIR__ . '/public/index.php';
