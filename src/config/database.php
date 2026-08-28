@@ -1,30 +1,41 @@
 <?php
 
 class Database {
-    // -------------------------------------------------------
-    // InfinityFree — แก้ค่าด้านล่างนี้ให้ตรงกับ Control Panel
-    // -------------------------------------------------------
+    private static $instance = null;
+    private $conn;
 
-    // Host: ดูได้จาก InfinityFree cPanel → MySQL Databases
-    // รูปแบบมักจะเป็น: sql***.infinityfree.net หรือ sqlXXX.epizy.com
-    private $host = "sqlXXX.epizy.com";
+    private $host;
+    private $db_name;
+    private $username;
+    private $password;
 
-    // ชื่อ Database: มักเริ่มต้นด้วย epiz_XXXXXXX_ชื่อ
-    // ตัวอย่าง: epiz_12345678_lumina
-    private $db_name = "epiz_XXXXXXX_lumina";
+    private function __construct() {
+        // Load .env only once if not loaded
+        if (!getenv('DB_HOST')) {
+            $envFile = __DIR__ . '/../../.env';
+            if (file_exists($envFile)) {
+                $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+                foreach ($lines as $line) {
+                    if (strpos(trim($line), '#') === 0) continue;
+                    if (strpos($line, '=') !== false) {
+                        list($name, $value) = explode('=', $line, 2);
+                        $name = trim($name);
+                        $value = trim($value);
+                        if (!array_key_exists($name, $_SERVER) && !array_key_exists($name, $_ENV)) {
+                            putenv(sprintf('%s=%s', $name, $value));
+                            $_ENV[$name] = $value;
+                            $_SERVER[$name] = $value;
+                        }
+                    }
+                }
+            }
+        }
 
-    // Username: เหมือนกับ Database username ใน cPanel
-    // ตัวอย่าง: epiz_12345678
-    private $username = "epiz_XXXXXXX";
-
-    // Password: รหัสผ่านที่ตั้งไว้ตอนสร้าง Database User
-    private $password = "YOUR_DB_PASSWORD";
-
-    public $conn;
-
-    public function getConnection() {
-        $this->conn = null;
-
+        $this->host = getenv('DB_HOST') ?: "sqlXXX.epizy.com";
+        $this->db_name = getenv('DB_DATABASE') ?: "epiz_XXXXXXX_lumina";
+        $this->username = getenv('DB_USERNAME') ?: "epiz_XXXXXXX";
+        $this->password = getenv('DB_PASSWORD') ?: "YOUR_DB_PASSWORD";
+        
         try {
             $dsn = "mysql:host=" . $this->host
                  . ";dbname=" . $this->db_name
@@ -37,11 +48,19 @@ class Database {
             ]);
 
         } catch (PDOException $exception) {
-            // ใน Production ไม่ควร echo error โดยตรง
             error_log("DB Connection error: " . $exception->getMessage());
             die("Database connection failed. Please try again later.");
         }
+    }
 
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new Database();
+        }
+        return self::$instance;
+    }
+
+    public function getConnection() {
         return $this->conn;
     }
 }

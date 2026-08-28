@@ -7,12 +7,12 @@
 // Base URL ของเว็บไซต์ (ไม่มี trailing slash)
 // ---------------------------------------------------------------
 // Local dev            : '/pj2/public'
-// luminashop.freedev.app (root domain) : ''
+// prairaveeshop.freedev.app (root domain) : ''
 // ---------------------------------------------------------------
 define('BASE_URL', '');
 
 // App name
-define('APP_NAME', 'LUMINA');
+define('APP_NAME', 'PRAIRAVEE');
 
 // Upload directory URL (relative to BASE_URL, no trailing slash)
 define('UPLOAD_URL', BASE_URL . '/uploads');

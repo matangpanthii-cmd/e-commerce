@@ -66,3 +66,11 @@ CREATE TABLE IF NOT EXISTS order_items (
     FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT,
     FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS site_settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    setting_key VARCHAR(100) UNIQUE NOT NULL,
+    setting_value TEXT,
+    setting_type ENUM('text', 'image_url', 'textarea') DEFAULT 'text',
+    label VARCHAR(255) NOT NULL
+);

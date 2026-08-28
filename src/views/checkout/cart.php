@@ -40,7 +40,7 @@ $tax   = $subtotal * 0.08;
 $total = $subtotal + $tax;
 ?>
 
-<div class="bg-lumina-surface border-b border-gray-200">
+<div class="bg-PRAIRAVEE-cream border-b border-gray-200">
     <div class="container mx-auto px-6 lg:px-12 py-8">
         <h1 class="text-3xl font-bold tracking-widest uppercase">Your Cart</h1>
     </div>
@@ -54,7 +54,7 @@ $total = $subtotal + $tax;
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
         <h2 class="text-2xl font-light text-gray-500 mb-6">Your cart is currently empty.</h2>
-        <a href="<?= BASE_URL ?>/products" class="inline-block bg-lumina-navy text-white px-8 py-3 font-medium uppercase tracking-wider text-sm hover:bg-opacity-90 transition">Continue Shopping</a>
+        <a href="<?= BASE_URL ?>/products" class="inline-block bg-PRAIRAVEE-green text-white px-8 py-3 font-medium uppercase tracking-wider text-sm hover:bg-opacity-90 transition">Continue Shopping</a>
     </div>
 <?php else: ?>
     <div class="flex flex-col lg:flex-row gap-12">
@@ -82,7 +82,7 @@ $total = $subtotal + $tax;
                         </a>
                         <div>
                             <h3 class="font-medium mb-1">
-                                <a href="<?= BASE_URL ?>/product/<?php echo htmlspecialchars($item['slug']); ?>" class="hover:text-lumina-gold transition">
+                                <a href="<?= BASE_URL ?>/product/<?php echo htmlspecialchars($item['slug']); ?>" class="hover:text-PRAIRAVEE-gold transition">
                                     <?php echo htmlspecialchars($item['name']); ?>
                                 </a>
                             </h3>
@@ -108,13 +108,13 @@ $total = $subtotal + $tax;
                             <form method="POST" action="<?= BASE_URL ?>/cart/update" class="inline">
                                 <input type="hidden" name="cart_key" value="<?php echo htmlspecialchars($item['cart_key']); ?>">
                                 <input type="hidden" name="action" value="decrease">
-                                <button type="submit" class="px-3 py-1 text-gray-500 hover:text-lumina-navy transition">-</button>
+                                <button type="submit" class="px-3 py-1 text-gray-500 hover:text-PRAIRAVEE-green transition">-</button>
                             </form>
                             <span class="px-3 py-1 text-sm w-10 text-center"><?php echo $item['quantity']; ?></span>
                             <form method="POST" action="<?= BASE_URL ?>/cart/update" class="inline">
                                 <input type="hidden" name="cart_key" value="<?php echo htmlspecialchars($item['cart_key']); ?>">
                                 <input type="hidden" name="action" value="increase">
-                                <button type="submit" class="px-3 py-1 text-gray-500 hover:text-lumina-navy transition">+</button>
+                                <button type="submit" class="px-3 py-1 text-gray-500 hover:text-PRAIRAVEE-green transition">+</button>
                             </form>
                         </div>
                     </div>
@@ -160,11 +160,11 @@ $total = $subtotal + $tax;
                 </div>
 
                 <a href="<?= BASE_URL ?>/checkout" id="checkout-btn"
-                   class="block w-full bg-lumina-navy text-white text-center py-4 font-medium uppercase tracking-wider text-sm hover:bg-opacity-90 transition shadow-md">
+                   class="block w-full bg-PRAIRAVEE-green text-white text-center py-4 font-medium uppercase tracking-wider text-sm hover:bg-opacity-90 transition shadow-md">
                     Proceed to Checkout
                 </a>
 
-                <a href="<?= BASE_URL ?>/products" class="block text-center text-sm text-gray-500 mt-4 hover:text-lumina-navy transition">
+                <a href="<?= BASE_URL ?>/products" class="block text-center text-sm text-gray-500 mt-4 hover:text-PRAIRAVEE-green transition">
                     ← Continue Shopping
                 </a>
             </div>

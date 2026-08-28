@@ -1,4 +1,5 @@
 <?php
+ob_start();
 session_start();
 
 // Define base path for includes
@@ -28,7 +29,7 @@ if ($request_uri === '/' || $request_uri === '/home') {
 } elseif ($request_uri === '/products') {
     require BASE_PATH . '/src/views/products/plp.php';
 
-} elseif (preg_match('/^\/product\/([a-z0-9\-]+)$/', $request_uri, $matches)) {
+} elseif (preg_match('/^\/product\/([a-zA-Z0-9\-_]+)$/', $request_uri, $matches)) {
     $product_slug = $matches[1];
     require BASE_PATH . '/src/views/products/pdp.php';
 
@@ -129,6 +130,9 @@ if ($request_uri === '/' || $request_uri === '/home') {
 
 } elseif ($request_uri === '/admin/users') {
     require BASE_PATH . '/src/views/admin/users/index.php';
+
+} elseif ($request_uri === '/admin/settings') {
+    require BASE_PATH . '/src/views/admin/settings/index.php';
 
 // =====================================================
 // 404

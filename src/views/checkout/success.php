@@ -20,7 +20,7 @@ if ($order_id) {
 }
 ?>
 
-<div class="min-h-[80vh] bg-lumina-surface flex items-center justify-center px-4 py-16">
+<div class="min-h-[80vh] bg-PRAIRAVEE-cream flex items-center justify-center px-4 py-16">
     <div class="w-full max-w-2xl text-center">
 
         <!-- Success Icon -->
@@ -42,7 +42,7 @@ if ($order_id) {
             <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-center flex-wrap gap-4">
                 <div>
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Order Number</p>
-                    <p class="text-2xl font-bold text-lumina-navy">#<?php echo str_pad($order['id'], 6, '0', STR_PAD_LEFT); ?></p>
+                    <p class="text-2xl font-bold text-PRAIRAVEE-green">#<?php echo str_pad($order['id'], 6, '0', STR_PAD_LEFT); ?></p>
                 </div>
                 <div class="text-right">
                     <p class="text-xs text-gray-400 uppercase tracking-wider mb-1">Date</p>
@@ -98,10 +98,10 @@ if ($order_id) {
         <?php endif; ?>
 
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="<?= BASE_URL ?>/" class="bg-lumina-navy text-white px-8 py-3 font-medium uppercase tracking-wider text-sm hover:bg-opacity-90 transition">
+            <a href="<?= BASE_URL ?>/" class="bg-PRAIRAVEE-green text-white px-8 py-3 font-medium uppercase tracking-wider text-sm hover:bg-opacity-90 transition">
                 Continue Shopping
             </a>
-            <a href="<?= BASE_URL ?>/products" class="border border-lumina-navy text-lumina-navy px-8 py-3 font-medium uppercase tracking-wider text-sm hover:bg-lumina-navy hover:text-white transition">
+            <a href="<?= BASE_URL ?>/products" class="border border-PRAIRAVEE-green text-PRAIRAVEE-green px-8 py-3 font-medium uppercase tracking-wider text-sm hover:bg-PRAIRAVEE-green hover:text-white transition">
                 Browse Collections
             </a>
         </div>

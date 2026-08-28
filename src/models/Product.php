@@ -6,7 +6,7 @@ class Product {
     private $table_name = "products";
 
     public function __construct() {
-        $database = new Database();
+        $database = Database::getInstance();
         $this->conn = $database->getConnection();
     }
 
@@ -32,7 +32,7 @@ class Product {
                   WHERE p.status != 'inactive'";
         
         if ($category) {
-            $query .= " AND (c.slug = :category OR p.status = :category)";
+            $query .= " AND (c.slug = :category_slug OR p.status = :category_status)";
         }
 
         switch($sort) {
@@ -53,7 +53,8 @@ class Product {
         $stmt = $this->conn->prepare($query);
         
         if ($category) {
-            $stmt->bindParam(':category', $category);
+            $stmt->bindParam(':category_slug', $category);
+            $stmt->bindParam(':category_status', $category);
         }
 
         $stmt->execute();
