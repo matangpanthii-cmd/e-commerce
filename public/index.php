@@ -13,9 +13,8 @@ require_once BASE_PATH . '/src/config/app.php';
 // =====================================================
 $request_uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-$script_base = rtrim(dirname($_SERVER['SCRIPT_NAME']), '/');
-if ($script_base !== '' && strpos($request_uri, $script_base) === 0) {
-    $request_uri = substr($request_uri, strlen($script_base));
+if (BASE_URL !== '' && strpos($request_uri, BASE_URL) === 0) {
+    $request_uri = substr($request_uri, strlen(BASE_URL));
 }
 $request_uri = '/' . ltrim($request_uri, '/');
 
