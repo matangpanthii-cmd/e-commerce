@@ -31,10 +31,10 @@ class Database {
             }
         }
 
-        $this->host = getenv('DB_HOST') ?: "sqlXXX.epizy.com";
-        $this->db_name = getenv('DB_DATABASE') ?: "epiz_XXXXXXX_lumina";
-        $this->username = getenv('DB_USERNAME') ?: "epiz_XXXXXXX";
-        $this->password = getenv('DB_PASSWORD') ?: "YOUR_DB_PASSWORD";
+        $this->host = getenv('DB_HOST') ?: "sql108.infinityfree.com";
+        $this->db_name = getenv('DB_DATABASE') ?: "if0_42755612_prairavee";
+        $this->username = getenv('DB_USERNAME') ?: "if0_42755612";
+        $this->password = getenv('DB_PASSWORD') ?: "pTOUL7HOn6Pa";
         
         try {
             $dsn = "mysql:host=" . $this->host
